@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeTrack — Personal Productivity Tracker</title>
+  <meta name="description" content="LifeTrack helps you organize daily tasks, build habits, and reach personal goals. No account, no backend — your data stays in your browser.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="logo">
+        <span class="logo-mark" aria-hidden="true">L</span>
+        <span class="logo-text">LifeTrack</span>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="dashboard" aria-label="Open dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="tasks" aria-label="Open tasks">Tasks</button>
+        <button class="nav-btn" data-view="habits" aria-label="Open habits">Habits</button>
+        <button class="nav-btn" data-view="goals" aria-label="Open goals">Goals</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost" id="clearSampleBtn" type="button">Clear sample data</button>
+        <p class="sidebar-note">Your data is stored only in this browser (LocalStorage). No account needed.</p>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <header class="page-header">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p class="subtitle" id="todayLine"></p>
+        </div>
+        <button class="btn btn-primary" id="quickAddBtn" type="button">+ New task</button>
+      </header>
+
+      <!-- ============ DASHBOARD ============ -->
+      <section id="view-dashboard" class="view active" aria-label="Dashboard">
+        <div class="stats-grid">
+          <div class="card stat-card">
+            <span class="stat-label">Today's tasks</span>
+            <span class="stat-value" id="statTotal">0</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-label">Completed</span>
+            <span class="stat-value stat-good" id="statDone">0</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-label">Pending</span>
+            <span class="stat-value stat-warn" id="statPending">0</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-label">Completion</span>
+            <span class="stat-value" id="statPct">0%</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Today's progress</h2>
+            <span class="muted" id="progressText"></span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-label="Today's task completion">
+            <div class="progress-fill" id="todayProgressFill"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2>Today's tasks</h2>
+              <button class="btn btn-text" type="button" data-goto="tasks">View all</button>
+            </div>
+            <ul class="mini-list" id="dashTaskList"></ul>
+            <div class="empty hidden" id="dashTaskEmpty">No tasks due today. Enjoy the breather — or add one.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Today's habits</h2>
+              <button class="btn btn-text" type="button" data-goto="habits">View all</button>
+            </div>
+            <p class="muted" id="dashHabitSummary"></p>
+            <ul class="mini-list" id="dashHabitList"></ul>
+            <div class="empty hidden" id="dashHabitEmpty">No habits yet. Add one to start a streak.</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2>Active goals</h2>
+              <button class="btn btn-text" type="button" data-goto="goals">View all</button>
+            </div>
+            <div id="dashGoalList"></div>
+            <div class="empty hidden" id="dashGoalEmpty">No active goals yet. Set one and watch the bar move.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>This week at a glance</h2>
+              <span class="muted">Habit check-ins per day</span>
+            </div>
+            <div class="bar-chart" id="weekChart" aria-label="Habit completions per day this week"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TASKS ============ -->
+      <section id="view-tasks" class="view" aria-label="Tasks">
+        <div class="card">
+          <div class="toolbar">
+            <div class="filter-group">
+              <label for="filterStatus">Status</label>
+              <select id="filterStatus">
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filterPriority">Priority</label>
+              <select id="filterPriority">
+                <option value="all">All priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filterDate">Show tasks for</label>
+              <input type="date" id="filterDate">
+            </div>
+            <button class="btn btn-secondary" id="filterTodayBtn" type="button">Today</button>
+            <button class="btn btn-primary" id="addTaskBtn" type="button">+ Add task</button>
+          </div>
+        </div>
+        <div id="taskList"></div>
+        <div class="empty hidden" id="taskEmpty">No tasks match these filters. Try another date or status — or add a new task.</div>
+      </section>
+
+      <!-- ============ HABITS ============ -->
+      <section id="view-habits" class="view" aria-label="Habits">
+        <div class="card">
+          <form id="habitForm" class="inline-form">
+            <div class="form-field grow">
+              <label for="habitName">New habit</label>
+              <input type="text" id="habitName" maxlength="60" placeholder="e.g. Meditate for 10 minutes" required>
+            </div>
+            <button class="btn btn-primary" type="submit">+ Add habit</button>
+          </form>
+          <p class="muted small">Tap a day in the grid to toggle it. Only today and past days can be checked.</p>
+        </div>
+        <div id="habitList"></div>
+        <div class="empty hidden" id="habitEmpty">No habits yet. Start with something small — consistency beats intensity.</div>
+      </section>
+
+      <!-- ============ GOALS ============ -->
+      <section id="view-goals" class="view" aria-label="Goals">
+        <div class="card">
+          <button class="btn btn-primary" id="addGoalBtn" type="button">+ Add goal</button>
+        </div>
+        <div id="goalList"></div>
+        <div class="empty hidden" id="goalEmpty">No goals yet. Big or small, write one down and give it a target date.</div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Task modal -->
+  <div class="modal-backdrop hidden" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="taskModalTitle">Add task</h2>
+        <button class="btn btn-icon" type="button" data-close="taskModal" aria-label="Close">×</button>
+      </div>
+      <form id="taskForm">
+        <div class="form-field">
+          <label for="taskTitle">Title *</label>
+          <input type="text" id="taskTitle" maxlength="120" required>
+        </div>
+        <div class="form-field">
+          <label for="taskDesc">Description</label>
+          <textarea id="taskDesc" rows="3" maxlength="500" placeholder="Optional details…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="taskDue">Due date *</label>
+            <input type="date" id="taskDue" required>
+          </div>
+          <div class="form-field">
+            <label for="taskPriority">Priority</label>
+            <select id="taskPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <p class="form-error hidden" id="taskFormError" role="alert"></p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-close="taskModal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Goal modal -->
+  <div class="modal-backdrop hidden" id="goalModal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="goalModalTitle">Add goal</h2>
+        <button class="btn btn-icon" type="button" data-close="goalModal" aria-label="Close">×</button>
+      </div>
+      <form id="goalForm">
+        <div class="form-field">
+          <label for="goalTitle">Title *</label>
+          <input type="text" id="goalTitle" maxlength="120" required>
+        </div>
+        <div class="form-field">
+          <label for="goalDesc">Description</label>
+          <textarea id="goalDesc" rows="3" maxlength="500" placeholder="Optional details…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="goalTarget">Target date *</label>
+            <input type="date" id="goalTarget" required>
+          </div>
+          <div class="form-field">
+            <label for="goalProgress">Progress (%)</label>
+            <input type="number" id="goalProgress" min="0" max="100" value="0">
+          </div>
+        </div>
+        <p class="form-error hidden" id="goalFormError" role="alert"></p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-close="goalModal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm modal -->
+  <div class="modal-backdrop hidden" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal modal-sm">
+      <h2 id="confirmModalTitle">Are you sure?</h2>
+      <p class="muted" id="confirmModalText"></p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" id="confirmCancel">Cancel</button>
+        <button class="btn btn-danger" type="button" id="confirmOk">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
